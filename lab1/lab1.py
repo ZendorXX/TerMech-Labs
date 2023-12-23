@@ -27,14 +27,14 @@ def Vect_arrow(VecX, VecY, X, Y):
 def anim(i):
     Pnt.set_data(X[i], Y[i])
 
-    Radius_vector.set_data([0, X[i]], [0, Y[i]])
-    Radius_vector_arrow.set_data(Vect_arrow(X[i], Y[i], 0, 0))
+    RVector.set_data([0, X[i]], [0, Y[i]])
+    RArrow.set_data(Vect_arrow(X[i], Y[i], 0, 0))
 
-    Velocity_vector.set_data([X[i], X[i] + X_velocity[i]], [Y[i], Y[i]+Y_velocity[i]])
-    Velocity_arrow.set_data(Vect_arrow(X_velocity[i], Y_velocity[i], X[i], Y[i]))
+    VVector.set_data([X[i], X[i] + X_velocity[i]], [Y[i], Y[i]+Y_velocity[i]])
+    VArrow.set_data(Vect_arrow(X_velocity[i], Y_velocity[i], X[i], Y[i]))
 
-    Acceleration_vector.set_data([X[i], X[i] + X_acceleration[i]], [Y[i], Y[i] + Y_acceleration[i]])
-    Acceleration_arrow.set_data(Vect_arrow(X_acceleration[i], Y_acceleration[i], X[i], Y[i]))
+    AVector.set_data([X[i], X[i] + X_acceleration[i]], [Y[i], Y[i] + Y_acceleration[i]])
+    AArrow.set_data(Vect_arrow(X_acceleration[i], Y_acceleration[i], X[i], Y[i]))
     
     return
 
@@ -84,17 +84,18 @@ grf.plot(X, Y)
 
 Pnt = grf.plot(X[0], Y[0], marker='o')[0]
 
-Radius_vector = grf.plot([0, X[0]], [0, Y[0]], 'black')[0]
-X_radius_vector_arrow, Y_radius_vector_arrow = Vect_arrow(X[0], Y[0], 0, 0)
-Radius_vector_arrow = grf.plot(X_radius_vector_arrow, Y_radius_vector_arrow, 'black')[0]
 
-Velocity_vector = grf.plot([X[0], X[0] + X_velocity[0]], [Y[0], Y[0] + Y_velocity[0]], 'r')[0]
-X_velocity_arrow, Y_velocity_arrow = Vect_arrow(X_velocity[0], Y_velocity[0], X[0], Y[0])
-Velocity_arrow = grf.plot(X_velocity_arrow, Y_velocity_arrow, 'r')[0]
+X_RArrow, Y_RArrow = Vect_arrow(X[0], Y[0], 0, 0)
+RArrow = grf.plot(X_RArrow, Y_RArrow, 'black')[0]
+RVector = grf.plot([0, X[0]], [0, Y[0]], 'black')[0]
 
-Acceleration_vector = grf.plot([X[0], X[0] + X_acceleration[0]], [Y[0], Y[0] + Y_acceleration[0]], 'g')[0]
-X_acceleration_arrow, Y_acceleration_arrow = Vect_arrow(X_acceleration[0], Y_acceleration[0], X[0], Y[0])
-Acceleration_arrow = grf.plot(X_acceleration_arrow, Y_acceleration_arrow, 'g')[0]
+X_VArrow, Y_VArrow = Vect_arrow(X_velocity[0], Y_velocity[0], X[0], Y[0])
+VArrow = grf.plot(X_VArrow, Y_VArrow, 'r')[0]
+VVector = grf.plot([X[0], X[0] + X_velocity[0]], [Y[0], Y[0] + Y_velocity[0]], 'r')[0]
+
+X_AArrow, Y_AArrow = Vect_arrow(X_acceleration[0], Y_acceleration[0], X[0], Y[0])
+AArrow = grf.plot(X_AArrow, Y_AArrow, 'g')[0]
+AVector = grf.plot([X[0], X[0] + X_acceleration[0]], [Y[0], Y[0] + Y_acceleration[0]], 'g')[0]
 
 an = FuncAnimation(fgr, anim, frames=step, interval=10)
 
