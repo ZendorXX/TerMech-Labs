@@ -90,7 +90,7 @@ for i in np.arange(len(T)):
     Veloctity_angle = math.atan2(Y_velocity[i], X_velocity[i])
     Acceleration_angle = math.atan2(Y_acceleration[i], X_acceleration[i])
     RСurvature_angle = Veloctity_angle - math.pi / 2 if Veloctity_angle - Acceleration_angle > 0 else Veloctity_angle + math.pi / 2
-    # RСurvature_angle = Veloctity_angle - math.pi / 2
+
     X_rcurvature[i] = RСurvature.subs(t, T[i]) * math.cos(RСurvature_angle)
     Y_rcurvature[i] = RСurvature.subs(t, T[i]) * math.sin(RСurvature_angle)
 
