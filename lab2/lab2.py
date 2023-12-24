@@ -1,83 +1,53 @@
-import numpy as n
+import numpy as np    
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-step = 1000
-t = n.linspace(0,10,step)
-x = n.sin(t)
-phi = n.sin(2*t)
+steps = 1000
 
 fgr = plt.figure()
-gr = fgr.add_subplot(1,1,1)
+gr = fgr.add_subplot(1, 1, 1)
 gr.axis('equal')
 
-gr.plot([0, 0, 4],[2, 0, 0],linewidth = 3)
+gr.plot([0, 0, 4], [4, 0, 0], linewidth=3)
+gr.plot([0.4, 3.6], [3, 3], 'black', linewidth=3)
 
-W = 0.8
-H = 0.4
-r = 0.1
-x0 = 1.5
-L = 0.5
+x0 = 2
+y0 = 3
+L = 1.5
 
-Xa = x0 + W/2 + x
-Ya = 2*r + H/2
+O_x = x0
+O_y = y0
 
-Xb = Xa + L*n.sin(phi)
-Yb = Ya + L*n.cos(phi)
+pO = gr.plot(O_x, O_y)[0]
 
-pA = gr.plot(Xa[0], Ya, marker='o')[0]
-pB = gr.plot(Xb[0], Yb[0], marker='o')[0]
+#a = np.linspace(0, 10, steps)
+#t = np.sin(a)
 
-Telega = gr.plot(n.array([-W/2, W/2, W/2, -W/2, -W/2]) + Xa[0],n.array([-H/2, -H/2, H/2, H/2, -H/2]) + Ya)[0]
-AB = gr.plot([Xa[0], Xb[0]],[Ya, Yb[0]])[0]
+t = np.linspace(-np.pi, 0, steps)
 
-Alp = n.linspace(0, 2*n.pi, 100)
-Xc = r*n.cos(Alp)
-Yc = r*n.sin(Alp) + r
+E_x = x0 + L * np.cos(t)
+E_y = y0 + L * np.sin(t)
 
-Wheel1 = gr.plot(Xc + x0 + Xa[0] - W/4 ,Yc, 'black')[0]
-Wheel2 = gr.plot(Xc + x0 + Xa[0] + W/4 ,Yc, 'black')[0]
+pE = gr.plot(E_x[0], E_y[0])[0]
 
-# Шаблон пружины
-# /\  /\  /\  |/
-#   \/  \/  \/|
-Np = 20
-Xp = n.linspace(0,1,2*Np+1)
-Yp = 0.06 * n.sin(n.pi/2*n.arange(2*Np+1))
+k = 1
+l = 0.5
+t_pr = np.linspace(0, l, steps)
+L_pruzh = np.cos(np.sqrt(k) * t_pr)
 
-Pruzh = gr.plot((x0 + x[0])*Xp, Yp + 2*r + H/2)[0]
+Ring_x = x0 + (L - L_pruzh) * np.cos(t)
+Ring_y = y0 + (L - L_pruzh) * np.sin(t)
 
-# Шаблон спиральной пружины
-Ns = 3
-r1 = 0.1
-r2 = 0.3
-numpnts = n.linspace(0,1,50*Ns+1)
-Betas = numpnts * (Ns * 2*n.pi - phi[0])
-Xs = (r1 + (r2-r1)*numpnts)*n.cos(Betas+n.pi/2)
-Ys = (r1 + (r2-r1)*numpnts)*n.sin(Betas+n.pi/2)
+pRing = gr.plot(Ring_x[0], Ring_y[0], 'red', marker='o')[0]
 
-SpPruzh = gr.plot(Xs + Xa[0], Ys + Ya)[0]
+OE = gr.plot([O_x, E_x[0]], [O_y, E_y[0]], 'black')[0]
 
-def run(i):
-    pA.set_data(Xa[i], Ya)
-    pB.set_data(Xb[i], Yb[i])
-    Telega.set_data(n.array([-W/2, W/2, W/2, -W/2, -W/2]) + Xa[i],n.array([-H/2, -H/2, H/2, H/2, -H/2]) + Ya)
-    AB.set_data([Xa[i], Xb[i]],[Ya, Yb[i]])
-    Wheel1.set_data(Xc + Xa[i] - W/4 ,Yc)
-    Wheel2.set_data(Xc + Xa[i] + W/4 ,Yc)
-    Pruzh.set_data((x0 + x[i])*Xp, Yp + 2*r + H/2)
-
-    Betas = numpnts * (Ns * 2*n.pi - phi[i])
-    Xs = (r1 + (r2-r1)*numpnts)*n.cos(Betas+n.pi/2)
-    Ys = (r1 + (r2-r1)*numpnts)*n.sin(Betas+n.pi/2)
-
-    SpPruzh.set_data(Xs + Xa[i], Ys + Ya)
-
+def anim(i):
+    #pE.set_data(E_x[i], E_y[i])
+    pRing.set_data(Ring_x[i], Ring_y[i])
+    OE.set_data([O_x, E_x[i]], [O_y, E_y[i]])
     return
 
-anim = FuncAnimation(fgr, run, frames = step, interval = 1)
+an = FuncAnimation(fgr, anim, frames=steps, interval=1)
 
-fgr.show()
-
-
-
+plt.show()
