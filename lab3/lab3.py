@@ -1,138 +1,129 @@
-import numpy as n
+import numpy as np    
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from scipy.integrate import odeint
 
-def SystDiffEq(y, t, m, M, L, c, k, g):
-    # y = [x, phi, x', phi'] -> dy = [x', phi', x'', phi'']
-    dy = n.zeros_like(y)
+def SystDiffEq(y, t, P, l, c, mu, g):
+    dy = np.zeros_like(y)
     dy[0] = y[2]
     dy[1] = y[3]
 
-    # a11 * x'' + a22 * phi'' = b1
-    # a21 * x'' + a22 * phi'' = b2
+    s = y[0]
+    phi = y[1]
+    ds = y[2]
+    dphi = y[3]
 
-    a11 = m + M
-    a12 = m * L * n.cos(y[1])
-    b1 = -k * y[0] + m * L * y[3] ** 2 * n.sin(y[1])
+    # a11 * s'' + a12 * phi'' = b1
+    # a21 * s'' + a22 * phi'' = b2
 
-    a21 = m * L * n.cos(y[1])
-    a22 = m * L ** 2
-    b2 = -c * y[1] + m * g * L * n.sin(y[1])
+    a11 = 1
+    a12 = 0
+    a21 = 0
+    a22 = (l + s)
+
+    b1 = g * np.cos(phi) - ((mu * g) / P) * ds  + ((c * g) / P) * s - (l + s) * (dphi) ** 2
+    b2 = -ds * dphi - g * (l + s) * np.sin(phi)
 
     detA = a11 * a22 - a12 * a21
     detA1 = b1 * a22 - a12 * b2
-    detA2 = a11 * b1 - a21 * b1
-    
+    detA2 = a11 * b2 - b1 * a21
+
     dy[2] = detA1 / detA
     dy[3] = detA2 / detA
 
     return dy
-    
-m = 5
-M = 50
-k = 10
-c = 30
-g = 9.81
 
-step = 1000
-t = n.linspace(0, 10, step)
-# x = n.sin(t)
-# phi = n.sin(2 * t)
+def spring(start, end, nodes, width):
+    nodes = max(int(nodes), 1)
 
-y0 = [0.2, 1, 0, 0]
+    start, end = np.array(start).reshape((2,)), np.array(end).reshape((2,))
 
-W = 0.8
-H = 0.4
-r = 0.1
-x0 = 1.5 
-L = 0.5 # AB
+    if (start == end).all():
+        return start[0], start[1]
 
-Y = odeint(SystDiffEq, y0, t, (m, M, L, c, k, g))
+    length = np.linalg.norm(np.subtract(end, start))
 
-x = Y[:, 0]
+    u_t = np.subtract(end, start) / length
+    u_n = np.array([[0, -1], [1, 0]]).dot(u_t)
+
+    spring_coords = np.zeros((2, nodes + 2))
+    spring_coords[:,0], spring_coords[:,-1] = start, end
+
+    normal_dist = np.sqrt(max(0, width**2 - (length**2 / nodes**2))) / 2
+
+    for i in range(1, nodes + 1):
+        spring_coords[:,i] = (
+            start
+            + ((length * (2 * i - 1) * u_t) / (2 * nodes))
+            + (normal_dist * (-1)**i * u_n))
+
+    return spring_coords[0,:], spring_coords[1,:]
+
+def anim(i):
+    pM.set_data([M_x[i], M_y[i]])
+    OE.set_data([O_x, E_x[i]], [O_y, E_y[i]])
+    Spr.set_data(*spring((O_x, O_y), (M_x[i], M_y[i]), 10, 0.3))
+    return
+
+steps = 1000
+t = np.linspace(-np.pi, 0, steps)
+
+y0 = [0, np.pi / 10, 0, 0.3]
+
+P = 10
+l = 0.5
+c = 20
+g = 9.8
+mu = 0
+
+Y = odeint(SystDiffEq, y0, t, (P, l, c, mu, g))
+
+s = Y[:, 0]
 phi = Y[:, 1]
-xt = Y[:, 2]
-phit = Y[:, 3]
+ds = Y[:, 2]
+dphi = Y[:, 3]
 
-Xtt = n.zeros_like(t)
-phitt = n.zeros_like(t)
+Stt = np.zeros_like(t)
+Phitt = np.zeros_like(t)
 for i in range(len(t)):
-    Xtt[i] = SystDiffEq(Y[i], t[i], m, M, L, c, k, g)[2]
-    phitt[i] = SystDiffEq(Y[i], t[i], m, M, L, c, k, g)[3]
+    Stt[i] = SystDiffEq(Y[i], t[i], P, l, c, mu, g)[2]
+    Phitt[i] = SystDiffEq(Y[i], t[i], P, l, c, mu, g)[3]
 
-fgrt = plt.figure()
-xplt = fgrt.add_subplot(2, 1, 1)
-xplt.plot(t, x)
-phiplt = fgrt.add_subplot(2, 1, 2)
-phiplt.plot(t, phi)
-fgrt.show()
+diff_solve = plt.figure()
+s_plt = diff_solve.add_subplot(2, 1, 1)
+s_plt.plot(t, s)
+phi_plt = diff_solve.add_subplot(2, 1, 2)
+phi_plt.plot(t, phi)
+
+x0 = 2
+y0 = 3
+L = 1.5
+
+O_x = x0
+O_y = y0
+
+E_x = x0 + L * np.cos(t)
+E_y = y0 + L * np.sin(t)
+
+L_sping_max = l 
+L_sping_curr = L_sping_max * np.sin(t)
+M_x = x0 - L_sping_curr * np.cos(t)
+M_y = y0 - L_sping_curr * np.sin(t)
 
 fgr = plt.figure()
 gr = fgr.add_subplot(1, 1, 1)
 gr.axis('equal')
+gr.set(xlim=[0, 5], ylim=[-1, 5])
 
-gr.plot([0, 0, 5], [2, 0, 0], linewidth=3)
+gr.plot([0, 0, 4], [4, 0, 0], linewidth=3)
+gr.plot([1.75, 2.25], [3, 3], 'black', linewidth=3)
 
-Xa = x0 + W/2 + x
-Ya = 2 * r + H/2
+pO = gr.plot(O_x, O_y)[0]
+pE = gr.plot(E_x[0], E_y[0])[0]
+pM = gr.plot(M_x[0], M_y[0], 'yellow', marker='o')[0]
+OE = gr.plot([O_x, E_x[0]], [O_y, E_y[0]], 'grey')[0]
+Spr = gr.plot(*spring((O_x, O_y), (M_x[0], M_y[0]), 10, 0.3), 'red')[0]
 
-Xb = Xa + L * n.sin(phi)
-Yb = Ya + L * n.cos(phi)
+an = FuncAnimation(fgr, anim, frames=steps, interval=1)
 
-pA = gr.plot(Xa[0], Ya, marker='o')[0]
-pB = gr.plot(Xb[0], Yb[0], marker='o')[0]
-
-Telega = gr.plot(n.array([-W/2, W/2, W/2, -W/2, -W/2]) + Xa[0], n.array([-H/2, -H/2, H/2, H/2, -H/2]) + Ya)[0]
-AB = gr.plot([Xa[0], Xb[0]], [Ya, Yb[0]])[0]
-
-Alp = n.linspace(0, 2 * n.pi, 100)
-Xc = r * n.cos(Alp)
-Yc = r * n.sin(Alp) + r
-
-Wheel1 = gr.plot(Xc + x0 + Xa[0] - W/4, Yc, 'black')[0]
-Wheel2 = gr.plot(Xc + x0 + Xa[0] + W/4, Yc, 'black')[0]
-
-# Шаблон пружины
-# /\  /\
-#   \/  \/
-Np = 20
-Xp = n.linspace(0, 1, 2 * Np + 1)
-Yp = 0.06 * n.sin(n.pi / 2 * n.arange(2 * Np + 1))
-
-Pruzh = gr.plot((x0 + x[0]) * Xp, Yp + 2 * r + H/2)[0]
-
-# Шаблон спиральной пружины
-Ns = 3
-r1 = 0.1
-r2 = 0.3
-numpnts = n.linspace(0, 1, 5 * Ns + 1)
-Betas = numpnts * (Ns * 2 * n.pi - phi[0])
-Xs = (r1 + (r2 - r1) * numpnts) * n.cos(Betas + n.pi/2)
-Ys = (r1 + (r2 - r1) * numpnts) * n.sin(Betas + n.pi/2)
-
-SpPruzh = gr.plot(Xs + Xa[0], Ys + Ya)[0]
-
-def run(i):
-    pA.set_data(Xa[i], Ya)
-    pB.set_data(Xb[i], Yb[i])
-    Telega.set_data(n.array([-W/2, W/2, W/2, -W/2, -W/2]) + Xa[i], n.array([-H/2, -H/2, H/2, H/2, -H/2]) + Ya)
-    AB.set_data([Xa[i], Xb[i]], [Ya, Yb[i]])
-    Wheel1.set_data(Xc + Xa[i] - W/4, Yc)
-    Wheel2.set_data(Xc + Xa[i] + W/4, Yc)
-    Pruzh.set_data((x0 + x[i]) * Xp, Yp + 2 * r + H/2)
-    
-    Betas = numpnts * (Ns * 2 * n.pi - phi[i])
-    Xs = (r1 + (r2 - r1) * numpnts) * n.cos(Betas + n.pi/2)
-    Ys = (r1 + (r2 - r1) * numpnts) * n.sin(Betas + n.pi/2)
-
-    SpPruzh.set_data(Xs + Xa[i], Ys + Ya)[0]
-
-    return
- 
-anim = FuncAnimation(fgr, run, frames=step, interval=1) 
-
-fgr.show()
-
-
-
+plt.show()
