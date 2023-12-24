@@ -30,12 +30,15 @@ def anim(i):
     RVector.set_data([0, X[i]], [0, Y[i]])
     RArrow.set_data(Vect_arrow(X[i], Y[i], 0, 0))
 
-    VVector.set_data([X[i], X[i] + X_velocity[i]], [Y[i], Y[i]+Y_velocity[i]])
+    VVector.set_data([X[i], X[i] + X_velocity[i]], [Y[i], Y[i] + Y_velocity[i]])
     VArrow.set_data(Vect_arrow(X_velocity[i], Y_velocity[i], X[i], Y[i]))
 
     AVector.set_data([X[i], X[i] + X_acceleration[i]], [Y[i], Y[i] + Y_acceleration[i]])
     AArrow.set_data(Vect_arrow(X_acceleration[i], Y_acceleration[i], X[i], Y[i]))
     
+    RCVector.set_data([X[i], X[i] + X_rcurvature[i]], [Y[i], Y[i] + Y_rcurvature[i]])
+    RCArrow.set_data(Vect_arrow(X_rcurvature[i], Y_rcurvature[i], X[i], Y[i]))
+
     return
 
 t = s.Symbol('t')
@@ -52,7 +55,13 @@ y_velocity = s.diff(y)
 x_acceleration = s.diff(x_velocity)
 y_acceleration = s.diff(y_velocity)
 
-step = 1000
+Velocity = s.sqrt(x_velocity ** 2 + y_velocity ** 2)
+Acceleration = s.sqrt(x_acceleration ** 2 + y_acceleration ** 2)
+Acceleration_t = s.diff(Velocity)
+Acceleration_n = s.sqrt(Acceleration ** 2 - Acceleration_t ** 2)
+RСurvature = (Velocity ** 2) / Acceleration_n
+
+step = 2000
 
 T = np.linspace(0, 10, step)
 
@@ -65,6 +74,9 @@ Y_velocity = np.zeros_like(T)
 X_acceleration = np.zeros_like(T)
 Y_acceleration = np.zeros_like(T)
 
+X_rcurvature = np.zeros_like(T)
+Y_rcurvature = np.zeros_like(T)
+
 for i in np.arange(len(T)):
     X[i] = s.Subs(x, t, T[i])
     Y[i] = s.Subs(y, t, T[i])
@@ -74,6 +86,11 @@ for i in np.arange(len(T)):
 
     X_acceleration[i] = s.Subs(x_acceleration, t, T[i])
     Y_acceleration[i] = s.Subs(y_acceleration, t, T[i])
+
+    Veloctity_angle = math.atan2(Y_velocity[i], X_velocity[i])
+    RСurvature_angle = Veloctity_angle - math.pi / 2
+    X_rcurvature[i] = RСurvature.subs(t, T[i]) * math.cos(RСurvature_angle)
+    Y_rcurvature[i] = RСurvature.subs(t, T[i]) * math.sin(RСurvature_angle)
 
 fgr = plot.figure()
 
@@ -97,6 +114,10 @@ X_AArrow, Y_AArrow = Vect_arrow(X_acceleration[0], Y_acceleration[0], X[0], Y[0]
 AArrow = grf.plot(X_AArrow, Y_AArrow, 'g')[0]
 AVector = grf.plot([X[0], X[0] + X_acceleration[0]], [Y[0], Y[0] + Y_acceleration[0]], 'g')[0]
 
-an = FuncAnimation(fgr, anim, frames=step, interval=10)
+X_RCArrow, Y_RCArrow = Vect_arrow(X_rcurvature[0], Y_rcurvature[0], X[0], Y[0])
+RCArrow = grf.plot(X_RCArrow, Y_RCArrow, 'y')[0]
+RCVector = grf.plot([X[0], X[0] + X_rcurvature[0]], [Y[0], Y[0] + Y_rcurvature[0]], 'y')[0]
+
+an = FuncAnimation(fgr, anim, frames=step, interval=20)
 
 plot.show()
