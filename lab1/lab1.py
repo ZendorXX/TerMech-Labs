@@ -99,4 +99,4 @@ AVector = grf.plot([X[0], X[0] + X_acceleration[0]], [Y[0], Y[0] + Y_acceleratio
 
 an = FuncAnimation(fgr, anim, frames=step, interval=10)
 
-fgr.show()
+plot.show()
