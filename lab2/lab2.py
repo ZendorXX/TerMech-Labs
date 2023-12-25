@@ -44,7 +44,10 @@ gr.set(xlim=[0, 5], ylim=[-1, 5])
 gr.plot([0, 0, 4], [4, 0, 0], linewidth=3)
 gr.plot([1.75, 2.25], [3, 3], 'black', linewidth=3)
 
-t = np.linspace(-np.pi, 0, steps)
+t = np.linspace(0, 10, steps)
+
+phi_t = np.cos(t) - np.pi / 2
+s_t = np.sin(t)
 
 x0 = 2
 y0 = 3
@@ -53,13 +56,13 @@ L = 1.5
 O_x = x0
 O_y = y0
 
-E_x = x0 + L * np.cos(t)
-E_y = y0 + L * np.sin(t)
+E_x = x0 + L * np.cos(phi_t)
+E_y = y0 + L * np.sin(phi_t)
 
 L_sping_max = 1.2 
-L_sping_curr = L_sping_max * np.sin(t)
-M_x = x0 - L_sping_curr * np.cos(t)
-M_y = y0 - L_sping_curr * np.sin(t)
+L_sping_curr = L_sping_max * np.sin(s_t)
+M_x = x0 + L_sping_curr * np.cos(phi_t)
+M_y = y0 + L_sping_curr * np.sin(phi_t)
 
 pO = gr.plot(O_x, O_y)[0]
 pE = gr.plot(E_x[0], E_y[0])[0]
