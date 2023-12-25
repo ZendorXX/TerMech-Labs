@@ -21,7 +21,7 @@ def SystDiffEq(y, t, P, l, c, mu, g):
     a21 = 0
     a22 = (l + s)
 
-    b1 = g * np.cos(phi) - ((mu * g) / P) * ds  + ((c * g) / P) * s - (l + s) * (dphi) ** 2
+    b1 = g * np.cos(phi) - ((mu * g) / P) * ds  - ((c * g) / P) * s + (l + s) * (dphi) ** 2
     b2 = -ds * dphi - g * (l + s) * np.sin(phi)
 
     detA = a11 * a22 - a12 * a21
@@ -66,15 +66,15 @@ def anim(i):
     return
 
 steps = 1000
-t = np.linspace(-np.pi, 0, steps)
+t = np.linspace(0, 10, steps)
 
 y0 = [0, np.pi / 10, 0, 0.3]
 
-P = 10
+P = 20
 l = 0.5
-c = 20
+c = 30
 g = 9.8
-mu = 0
+mu = 2
 
 Y = odeint(SystDiffEq, y0, t, (P, l, c, mu, g))
 
@@ -91,8 +91,10 @@ for i in range(len(t)):
 
 diff_solve = plt.figure()
 s_plt = diff_solve.add_subplot(2, 1, 1)
+plt.title("s(t)")
 s_plt.plot(t, s)
 phi_plt = diff_solve.add_subplot(2, 1, 2)
+plt.title("phi(t)")
 phi_plt.plot(t, phi)
 
 x0 = 2
@@ -102,13 +104,15 @@ L = 1.5
 O_x = x0
 O_y = y0
 
-E_x = x0 + L * np.cos(t)
-E_y = y0 + L * np.sin(t)
+phi = phi - np.pi / 2
+
+E_x = x0 + L * np.cos(phi)
+E_y = y0 + L * np.sin(phi)
 
 L_sping_max = l 
-L_sping_curr = L_sping_max * np.sin(t)
-M_x = x0 - L_sping_curr * np.cos(t)
-M_y = y0 - L_sping_curr * np.sin(t)
+L_sping_curr = L_sping_max * np.cos(s)
+M_x = x0 + L_sping_curr * np.cos(phi)
+M_y = y0 + L_sping_curr * np.sin(phi)
 
 fgr = plt.figure()
 gr = fgr.add_subplot(1, 1, 1)
